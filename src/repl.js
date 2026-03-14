@@ -13,6 +13,10 @@ export const repl = async (command, closeCallback) => {
         await csvToJson(command);
         return;
     }
+    if (command.startsWith('json-to-csv')) {
+        await jsonToCsv(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
