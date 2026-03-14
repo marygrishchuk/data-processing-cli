@@ -9,6 +9,10 @@ export const repl = async (command, closeCallback) => {
         await changeDir(target);
         return;
     }
+    if (command.startsWith('csv-to-json')) {
+        await csvToJson(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
