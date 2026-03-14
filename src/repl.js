@@ -1,0 +1,46 @@
+import { count } from "./commands/count.js";
+import { csvToJson } from "./commands/csvToJson.js";
+import { jsonToCsv } from "./commands/jsonToCsv.js";
+import { changeDir, listAllFilesAndDirs, moveUpDir } from "./navigation.js";
+
+export const repl = async (command, closeCallback) => {
+    if (command.startsWith('cd')) {
+        const target = command.slice(3).trim();
+        await changeDir(target);
+        return;
+    }
+
+    switch (command) {
+        case 'up':
+            // Move up one directory level:
+            await moveUpDir();
+            break;
+        case 'ls':
+            // List files and directories in current directory:
+            await listAllFilesAndDirs();
+            break;
+        case 'hash':
+            // Calculate file hash
+            break;
+        case 'hash-compare':
+            // Compare file hash with expected hash
+            break;
+        case 'encrypt':
+            // Encrypt a file
+            break;
+        case 'decrypt':
+            // Decrypt a file
+            break;
+        case 'log-stats':
+            // Analyze a large log file using Worker Threads
+            break;
+        case 'exit':
+            closeCallback();
+            return;
+        default:
+            if (command.length > 0) {
+                console.log('Invalid input');
+            }
+            break;
+    }
+}
