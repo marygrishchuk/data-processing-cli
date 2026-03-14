@@ -17,6 +17,10 @@ export const repl = async (command, closeCallback) => {
         await jsonToCsv(command);
         return;
     }
+    if (command.startsWith('count')) {
+        await count(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
