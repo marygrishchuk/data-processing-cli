@@ -1,5 +1,6 @@
 import { count } from "./commands/count.js";
 import { csvToJson } from "./commands/csvToJson.js";
+import { hash } from "./commands/hash.js";
 import { jsonToCsv } from "./commands/jsonToCsv.js";
 import { changeDir, listAllFilesAndDirs, moveUpDir } from "./navigation.js";
 
@@ -21,6 +22,10 @@ export const repl = async (command, closeCallback) => {
         await count(command);
         return;
     }
+    if (command.startsWith('hash')) {
+        await hash(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
@@ -30,9 +35,6 @@ export const repl = async (command, closeCallback) => {
         case 'ls':
             // List files and directories in current directory:
             await listAllFilesAndDirs();
-            break;
-        case 'hash':
-            // Calculate file hash
             break;
         case 'hash-compare':
             // Compare file hash with expected hash
