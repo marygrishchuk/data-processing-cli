@@ -21,7 +21,6 @@ export const hash = async (command) => {
     }
 
     const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-    const outputPath = path.resolve(getCurrentWorkingDir(), `${inputArgValue}.${algorithm}`);
 
     const fileExists = await access(inputPath)
         .then(() => true)
@@ -40,6 +39,7 @@ export const hash = async (command) => {
     if (!isSaveProvided) {
         console.log(`${algorithm}: ${fileHash}`);
     } else {
+        const outputPath = path.resolve(getCurrentWorkingDir(), `${inputArgValue}.${algorithm}`);
         createWriteStream(outputPath, { encoding: 'utf8' }).end(fileHash);
     }
 };
