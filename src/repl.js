@@ -1,5 +1,6 @@
 import { count } from "./commands/count.js";
 import { csvToJson } from "./commands/csvToJson.js";
+import { encrypt } from "./commands/encrypt.js";
 import { hash } from "./commands/hash.js";
 import { hashCompare } from "./commands/hashCompare.js";
 import { jsonToCsv } from "./commands/jsonToCsv.js";
@@ -31,6 +32,10 @@ export const repl = async (command, closeCallback) => {
         await hashCompare(command);
         return;
     }
+    if (command.startsWith('encrypt')) {
+        await encrypt(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
@@ -40,9 +45,6 @@ export const repl = async (command, closeCallback) => {
         case 'ls':
             // List files and directories in current directory:
             await listAllFilesAndDirs();
-            break;
-        case 'encrypt':
-            // Encrypt a file
             break;
         case 'decrypt':
             // Decrypt a file
