@@ -1,31 +1,23 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { access, readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
-import { getCurrentWorkingDir } from '../navigation.js';
 import { getArgValueByName } from '../utils/argParser.js';
+import { pathResolver } from '../utils/pathResolver.js';
 
 export const hashCompare = async (command) => {
-    const inputArgValue = getArgValueByName(command, 'input');
-    const hashFileArgValue = getArgValueByName(command, 'hash');
     const algorithm = getArgValueByName(command, 'algorithm') ?? 'sha256';
+    let inputPath, hashFilePath;
 
-    if (!inputArgValue || !hashFileArgValue) {
-        console.log('Invalid input. Please provide --input and --hash.');
+    try {
+        const paths = await pathResolver(command, ['input', 'hash'], false);
+        inputPath = paths[0];
+        hashFilePath = paths[1];
+    } catch (error) {
         return;
     }
+
     if (!['sha256', 'md5', 'sha512'].includes(algorithm)) {
-        console.log('Operation failed');
-        return;
-    }
-
-    const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-    const hashFilePath = path.resolve(getCurrentWorkingDir(), hashFileArgValue);
-
-    const isInputPathValid = await access(inputPath).then(() => true).catch(() => false);
-    const isHashPathValid = await access(hashFilePath).then(() => true).catch(() => false);
-    if (!isInputPathValid || !isHashPathValid) {
         console.log('Operation failed');
         return;
     }

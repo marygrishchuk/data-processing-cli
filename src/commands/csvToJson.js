@@ -1,28 +1,15 @@
-import { createReadStream, createWriteStream, constants as fsConstants } from 'node:fs';
-import { access } from 'node:fs/promises';
-import path from 'node:path';
+import { createReadStream, createWriteStream } from 'node:fs';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { getArgValueByName } from '../utils/argParser.js';
-import { getCurrentWorkingDir } from '../navigation.js';
+import { pathResolver } from '../utils/pathResolver.js';
 
 export const csvToJson = async (command) => {
-    const inputArgValue = getArgValueByName(command, 'input');
-    const outputArgValue = getArgValueByName(command, 'output');
-
-    if (!inputArgValue || !outputArgValue) {
-        console.log('Invalid input. Please provide --input and --output arguments.');
-        return;
-    }
-
-    const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-    const outputPath = path.resolve(getCurrentWorkingDir(), outputArgValue);
-
-    const fileExists = await access(inputPath)
-        .then(() => true)
-        .catch(() => false);
-    if (!fileExists) {
-        console.log('Operation failed');
+    let inputPath, outputPath;
+    try {
+        const paths = await pathResolver(command, ['input', 'output']);
+        inputPath = paths[0];
+        outputPath = paths[1];
+    } catch (error) {
         return;
     }
 

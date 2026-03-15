@@ -1,31 +1,25 @@
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { access } from 'node:fs/promises';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { getCurrentWorkingDir } from '../navigation.js';
 import { getArgValueByName } from '../utils/argParser.js';
+import { pathResolver } from '../utils/pathResolver.js';
 
 export const hash = async (command) => {
-    const inputArgValue = getArgValueByName(command, 'input');
     const algorithm = getArgValueByName(command, 'algorithm') ?? 'sha256';
     const isSaveProvided = command.includes('--save');
+    let inputPath, inputArgValue;
 
-    if (!inputArgValue) {
-        console.log('Invalid input. Please provide --input.');
+    try {
+        const data = await pathResolver(command, ['input'], true, true);
+        inputPath = data.resolvedPaths[0];
+        inputArgValue = data.pathArgValues[0];
+    } catch (error) {
         return;
     }
+
     if (!['sha256', 'md5', 'sha512'].includes(algorithm)) {
-        console.log('Operation failed');
-        return;
-    }
-
-    const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-
-    const fileExists = await access(inputPath)
-        .then(() => true)
-        .catch(() => false);
-    if (!fileExists) {
         console.log('Operation failed');
         return;
     }

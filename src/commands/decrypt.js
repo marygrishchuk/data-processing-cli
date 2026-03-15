@@ -1,11 +1,10 @@
 import { createDecipheriv, scrypt } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { promisify } from 'node:util';
-import { getCurrentWorkingDir } from '../navigation.js';
 import { getArgValueByName } from '../utils/argParser.js';
+import { pathResolver } from '../utils/pathResolver.js';
 
 const printError = () => {
     console.log('Operation failed');
@@ -14,21 +13,25 @@ const printError = () => {
 export const decrypt = async (command) => {
     const algorithm = 'aes-256-gcm';
     const password = getArgValueByName(command, 'password');
-    const inputArgValue = getArgValueByName(command, 'input');
-    const outputArgValue = getArgValueByName(command, 'output');
     const headerSize = 28; // 16 bytes salt + 12 bytes iv
     const authTagSize = 16;
+    let inputPath, outputPath;
 
-    if (!inputArgValue || !outputArgValue || !password) {
-        console.log('Invalid input. Please provide --input, --output and --password.');
+    try {
+        const paths = await pathResolver(command, ['input', 'output']);
+        inputPath = paths[0];
+        outputPath = paths[1];
+    } catch (error) {
         return;
     }
 
-    const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-    const outputPath = path.resolve(getCurrentWorkingDir(), outputArgValue);
+    if (!password) {
+        console.log('Invalid input. Please provide --password.');
+        return;
+    }
 
     const inputFileStats = await stat(inputPath).catch(() => null);
-    if (!inputFileStats || inputFileStats.size < headerSize + authTagSize) {
+    if (inputFileStats.size < headerSize + authTagSize) {
         printError();
         return;
     }

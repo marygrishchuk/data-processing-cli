@@ -1,24 +1,12 @@
 import { createReadStream } from 'node:fs';
-import { access } from 'node:fs/promises';
-import path from 'node:path';
-import { getCurrentWorkingDir } from '../navigation.js';
-import { getArgValueByName } from '../utils/argParser.js';
+import { pathResolver } from '../utils/pathResolver.js';
 
 export const count = async (command) => {
-    const inputArgValue = getArgValueByName(command, 'input');
-
-    if (!inputArgValue) {
-        console.log('Invalid input. Please provide --input argument.');
-        return;
-    }
-
-    const inputPath = path.resolve(getCurrentWorkingDir(), inputArgValue);
-
-    const fileExists = await access(inputPath)
-        .then(() => true)
-        .catch(() => false);
-    if (!fileExists) {
-        console.log('Operation failed');
+    let inputPath;
+    try {
+        const paths = await pathResolver(command, ['input']);
+        inputPath = paths[0];
+    } catch (error) {
         return;
     }
 
@@ -26,23 +14,30 @@ export const count = async (command) => {
 
     let linesCount = 0, wordsCount = 0, charsCount = 0, remainder = '';
 
-    readStream.on('data', chunk => {
-        const data = remainder + chunk.toString();
-        const lines = data.split(/\r?\n/);
-        if (lines.length > 1) {
-            remainder = lines.pop() ?? '';
-        }
+    return new Promise((resolve, reject) => {
+        readStream.on('data', chunk => {
+            const data = remainder + chunk.toString();
+            const lines = data.split(/\r?\n/);
+            if (lines.length > 1) {
+                remainder = lines.pop() ?? '';
+            } else {
+                remainder = lines[0] ?? '';
+                return;
+            }
 
-        linesCount += lines.length;
-        wordsCount += data.split(' ').length;
-        charsCount += lines.join('').length;
-    })
-    readStream.on('end', () => {
-        if (remainder) {
-            linesCount++;
-            wordsCount += remainder.split(' ').length;
-            charsCount += remainder.length;
-        }
-        console.log(`Lines: ${linesCount}\nWords: ${wordsCount}\nCharacters: ${charsCount}\n`);
+            linesCount += lines.length;
+            wordsCount += lines.join(' ').split(' ').length;
+            charsCount += lines.join('').length;
+        });
+        readStream.on('end', () => {
+            if (remainder) {
+                linesCount++;
+                wordsCount += remainder.split(' ').length;
+                charsCount += remainder.length;
+            }
+            console.log(`Lines: ${linesCount}\nWords: ${wordsCount}\nCharacters: ${charsCount}`);
+            resolve();
+        });
+        readStream.on('error', reject);
     });
 };
