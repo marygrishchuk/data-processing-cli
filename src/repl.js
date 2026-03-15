@@ -5,6 +5,7 @@ import { encrypt } from "./commands/encrypt.js";
 import { hash } from "./commands/hash.js";
 import { hashCompare } from "./commands/hashCompare.js";
 import { jsonToCsv } from "./commands/jsonToCsv.js";
+import { logStats } from "./commands/logStats.js";
 import { changeDir, listAllFilesAndDirs, moveUpDir } from "./navigation.js";
 
 export const repl = async (command, closeCallback) => {
@@ -41,6 +42,10 @@ export const repl = async (command, closeCallback) => {
         await decrypt(command);
         return;
     }
+    if (command.startsWith('log-stats')) {
+        await logStats(command);
+        return;
+    }
 
     switch (command) {
         case 'up':
@@ -50,9 +55,6 @@ export const repl = async (command, closeCallback) => {
         case 'ls':
             // List files and directories in current directory:
             await listAllFilesAndDirs();
-            break;
-        case 'log-stats':
-            // Analyze a large log file using Worker Threads
             break;
         case 'exit':
             closeCallback();
