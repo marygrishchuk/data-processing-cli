@@ -56,7 +56,7 @@ export const encrypt = async (command) => {
         },
         flush(callback) {
             try {
-                this.push(cipher.getAuthTag());
+                this.push(cipher.getAuthTag()); // 16 bytes
                 callback();
             } catch (error) {
                 callback(error);
