@@ -9,3 +9,4 @@ snapshot.json
 data.json
 checksums.json
 *.txt
+*.txt.*

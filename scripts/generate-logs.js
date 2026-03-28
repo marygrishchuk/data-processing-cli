@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('node:fs');
-const path = require('node:path');
-const { parseArgs } = require('node:util');
+import fs from 'node:fs';
+import path from 'node:path';
+import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
     options: {
